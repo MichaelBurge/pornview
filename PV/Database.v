@@ -61,12 +61,10 @@ Fixpoint find_category_ids (db : ImageDb) (cat : CategoryId) : Index :=
   | Some xs => xs
   end.
 
-Compute find_category_ids newDb N.zero.
+(* Compute find_category_ids newDb N.zero. *)
 
 Fixpoint set_from_list (xs : list N) : Index := fold_right S.add S.empty xs.
 Fixpoint list_from_set (xs : Index) : list N := S.fold cons xs nil.
-
-Print option.
 
 Fixpoint find_categories_ids (db : ImageDb) (categories : list CategoryId) : Index :=
   match categories with
@@ -93,8 +91,6 @@ Fixpoint delete_image (db : ImageDb) (img : ImageId) : ImageDb :=
     indices := M.map (S.remove img) (indices db);
     next_id := next_id db
   |}.
-
-Print M.add.
 
 Fixpoint tag_image (db: ImageDb) (img : ImageId) (cat : CategoryId) : ImageDb :=
   let idxs :=
@@ -131,9 +127,6 @@ Proof.
   compute.
   tauto.
 Qed.
-
-Extraction Language Haskell.
-Extraction count_empty_db.
 
 Definition InternallyConsistent (db : ImageDb) :=
   forall (some_id : ImageId),
@@ -231,9 +224,15 @@ Lemma num_images_1 :
   forall (db : ImageDb) (img : ImageId),
     num_images (delete_image db img) = M.cardinal (M.remove img (images db)).
 Proof.
-  admit.
-Admitted.
+  intros.
+  destruct db.
+  unfold delete_image.
+  unfold num_images.
   
+  unfold images.
+  tauto.
+Qed.
+
 Theorem size_decreases : forall (db : ImageDb) (img : ImageId),
     (Is_true (mem_image db img) /\ S (num_images (delete_image db img)) = num_images db) \/
     (~ Is_true (mem_image db img) /\ num_images (delete_image db img) = num_images db).

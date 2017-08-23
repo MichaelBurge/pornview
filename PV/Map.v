@@ -32,71 +32,6 @@ Module SF := Coq.FSets.FSetFacts.Facts S.
 Section Map.
 
   Variable elt : Type.
-  Variable eqA : elt -> elt -> Prop.
-  Variable eqA_dec : DecidableEqA elt eqA.
-
-(* Lemma decidable_eq_pair : *)
-(*   DecidableEq (M.key * elt). *)
-(* Proof. *)
-(*   intro. *)
-(*   intro. *)
-(*   destruct x. *)
-(*   destruct y. *)
-(*   specialize (dec e e0). *)
-(*   destruct dec. *)
-(*   specialize (M.E.eq_dec k k0). intro. *)
-(*   destruct H. *)
-(*   (* Equal *) *)
-(*   left. *)
-(*   rewrite e2. rewrite e1. auto. *)
-(*   (* Key unequal *) *)
-(*   right. *)
-(*   intro. *)
-(*   rewrite e1 in H. *)
-(*   destruct n. *)
-(*   assert (fst (k, e0) = fst (k0, e0)). *)
-(*   rewrite H. auto. *)
-(*   unfold fst in H0. *)
-(*   apply H0. *)
-(*   (* Element unequal *) *)
-(*   right. *)
-(*   intro. *)
-(*   destruct n. *)
-(*   assert (snd (k, e) = snd (k0, e0)). *)
-(*   rewrite H. auto. *)
-(*   unfold snd in H0. *)
-(*  (*  apply H0. *) *)
-(* Qed. *)
-
-(* Lemma decidable_eqke_pair : *)
-(*   DecidableEqA (M.key * elt) (@M.eq_key_elt elt). *)
-(* Proof. *)
-(*   admit. *)
-(*   (* intro. *) *)
-(*   (* intro. *) *)
-(*   (* destruct x. destruct y. *) *)
-(*   (* case (N.eq_dec k k0). *) *)
-(*   (* case (dec e e0). *) *)
-(*   (* intros. *) *)
-(*   (* rewrite e1. rewrite e2. *) *)
-(*   (* left. *) *)
-(*   (* compute. *) *)
-(*   (* auto. *) *)
-
-(*   (* intros. *) *)
-(*   (* right. *) *)
-(*   (* compute. *) *)
-(*   (* intros. *) *)
-(*   (* destruct H. *) *)
-(*   (* contradiction. *) *)
-
-(*   (* intros. *) *)
-(*   (* right. *) *)
-(*   (* compute. *) *)
-(*   (* intro. *) *)
-(*   (* destruct H. *) *)
-(*   (* contradiction. *) *)
-(* Admitted. *)
 
 Lemma decidable_eqk_pair :
   DecidableEqA (M.key * elt) (@M.eq_key elt).
@@ -155,13 +90,6 @@ Proof.
   apply IHl in H.
   tauto.
 Qed.
-
-Lemma cons_head :
-  forall (a : Type) (xs1 xs2 : list a) (x1 x2 : a),
-    (x1 :: xs1) = (x2 :: xs2) <-> x1 = x2.
-Proof.
-  admit.
-Admitted.
 
 Lemma eqb_findA_1 :
   forall (xs : list (prod N elt)) (k : N) (e : elt),
@@ -452,7 +380,6 @@ Proof.
   case_eq (M.E.eq_dec k y).
   intros.
 
-  SearchAbout M.MapsTo.
   apply M.find_1 in H.
   rewrite MP.F.elements_o in H.
   rewrite e0 in H.
