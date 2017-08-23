@@ -26,10 +26,41 @@ Lemma s_neq_2 :
     S n = S m <-> n = m.
 Proof.
   intros.
+  split. intro.
+  inversion H. tauto.
+  
+  intro. rewrite H.
+  tauto.
+Qed.
+
+Lemma l_sub :
+  forall (p : nat) (q : nat) (r : nat),
+    p + q = p + r <-> q = r.
+Proof.
+  intros.
   split.
   intro.
-  congruence.
+  induction p.
+  compute in H. apply H.
+
+  inversion H. apply IHp in H1. apply H1.
+
   intro.
   rewrite H.
-  auto.
+  tauto.
+Qed.
+
+Lemma succ_add :
+  forall (p : nat),
+    S p = p + 1.
+Proof.
+  intro.
+
+  case_eq (p). intros. compute. auto.
+  intros. rewrite <- H.
+  assert (p = p + 0).
+  apply plus_n_O.
+  rewrite H0.
+  rewrite plus_n_Sm. rewrite <- H0.
+  tauto.  
 Qed.

@@ -1,7 +1,9 @@
 libs =	PV/Types.vo \
 	PV/Nat.vo \
 	PV/Lists.vo \
-	PV/SetoidLists.vo
+	PV/SetoidLists.vo \
+	PV/Map.vo \
+	PV/Database.vo
 
 
 all: deps $(libs)

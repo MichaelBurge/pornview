@@ -382,16 +382,6 @@ Proof.
   apply IHNoDup.
   tauto.
 Qed.
-
-
-Lemma list_length_remove :
-  forall (elt : Type) (x : elt) (xs : list elt) (ys : list elt),
-    forall (dec : DecidableEq elt),
-      NoDup ys ->
-      length (x :: xs) <> length ys -> ~ In x ys \/ length xs <> length (remove dec x ys).
-Proof.
-  admit.
-Admitted.
   
 Lemma list_diff_exists :
   forall (elt : Type) (xs : list elt) (ys : list elt),

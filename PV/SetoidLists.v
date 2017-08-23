@@ -6,46 +6,22 @@ Require Import Coq.Lists.List.
 Require Import Coq.Lists.SetoidList.
 Require Import Coq.Arith.PeanoNat.
 
-Parameter a : Type.
-Parameter eqA : a -> a -> Prop.
-Parameter equiv : Equivalence eqA.
-Parameter dec : DecidableEqA a eqA.
+Section SetoidLists.
+
+Variable a : Type.
+Variable eqA : a -> a -> Prop.
+Variable equiv : Equivalence eqA.
+Variable dec : DecidableEqA a eqA.
 
 Lemma NoDupA_head_1 :
   forall (xs : list a) (x : a),
     NoDupA eqA (x :: xs) -> NoDupA eqA xs.
 Proof.
-  admit.
-Admitted.
+  intros.
+  inversion H.
+  apply H3.
+Qed.
   
-Lemma removeA_not_in:
-  forall (xs : list a) (x : a),
-    ~In x xs -> xs = removeA dec x xs.
-Proof.
-  (* intros. *)
-  (* induction xs. *)
-  (* compute. auto. *)
-  (* unfold remove. *)
-  (* case (dec x a0). *)
-
-  (* intro. *)
-  (* rewrite e in H. *)
-  (* destruct H. *)
-  (* apply in_eq. *)
-
-  (* intro. *)
-  (* assert (~ In x xs). *)
-  (* intro. *)
-  (* destruct H. *)
-  (* apply in_cons. *)
-  (* apply H0. *)
-
-  (* specialize (IHxs H0). *)
-  (* rewrite IHxs in |- * at 1. *)
-  (* unfold remove. *)
-  (* auto. *)
-Admitted.
-
 Lemma removeA_head_2 :
   forall (xs : list a) (x1 x2 : a),
     ~ eqA x1 x2 -> removeA dec x1 (x2::xs) = x2 :: (removeA dec x1 xs).
@@ -72,13 +48,73 @@ Proof.
   contradiction.
 Qed.
 
+Lemma NoDupA_head_2 :
+  forall (xs : list a) (x1 x2 : a),
+    NoDupA eqA (x1 :: x2 :: xs) -> ~ eqA x1 x2.
+Proof.
+  intros.
+  inversion H.
+  intro.
+  destruct H2.
+  inversion H3.
+  apply InA_cons_hd with (l := xs) in H4.
+  apply H4.
+Qed.
+
+Lemma NoDupA_head_3 :
+  forall (xs : list a) (x1 x2 : a),
+    NoDupA eqA (x1 :: x2 :: xs) -> NoDupA eqA (x2 :: x1 :: xs).
+Proof.
+  intros.
+  inversion H.
+  inversion H3.
+
+  specialize (NoDupA_head_2 xs x1 x2 H).
+  intro.
+  apply NoDupA_cons.
+  intro.
+  destruct H6.
+  inversion H9.
+  apply equiv in H10. contradiction.
+  apply H10.
+
+  apply NoDupA_cons.
+  SearchAbout InA.
+  rewrite InA_cons in H2.
+  intro.
+  destruct H2.
+  right.
+  apply H9.
+  apply H7.
+Qed.
+
 Lemma removeA_head_5 :
   forall (xs : list a) (x1 x2 : a),
     NoDupA eqA (x2::xs) -> eqA x1 x2 ->
     removeA dec x1 (x2::xs) = xs.
 Proof.
-  admit.
-Admitted.
+  intros.
+  rewrite removeA_head_4.
+  induction xs.
+  compute. tauto.
+
+  inversion H.
+  assert (~ eqA x1 a0). apply NoDupA_head_2 with (xs := xs).
+  apply NoDupA_cons.
+  intro.
+  destruct H3.
+  apply InA_eqA with (x := x1). apply equiv. apply equiv. apply equiv in H0. apply H0.
+  apply H5. apply H4.
+  apply removeA_head_2 with (xs := xs) in H5.
+  rewrite H5.
+  assert (NoDupA eqA (x2 :: xs)). apply NoDupA_head_3 in H.
+  inversion H.
+  apply H9.
+  specialize (IHxs H6).
+  rewrite IHxs.
+  tauto.
+  auto.
+Qed.
 
 Lemma removeA_head_1 :
   forall (xs : list a) (x : a),
@@ -166,45 +202,6 @@ Proof.
   apply equiv. apply H1.
 Qed.
 
-Lemma list_removeA_add :
-  forall (xs : list a) (x : a),
-    NoDupA eqA xs -> InA eqA x xs ->
-    Add x (removeA dec x xs) xs.
-Proof.
-  (* intros. *)
-  (* induction xs. *)
-  (* apply InA_nil in H0. *)
-  (* contradiction. *)
-
-  (* case (dec x a0). *)
-  (* intros. *)
-  (* rewrite <- removeA_head_1 with (x := x). *)
-  (* specialize (d x a0). *)
-  (* destruct d. *)
-  (* rewrite <- e. *)
-  (* rewrite <- remove_head_1 with (x := x) (dec := dec). *)
-  (* apply Add_head. *)
-  (* assert (~ In x xs /\ NoDup xs). *)
-  (* rewrite <- NoDup_cons_iff. *)
-  (* rewrite <- e in H. *)
-  (* apply H. *)
-  (* destruct H1. *)
-  (* apply H1. *)
-
-  (* specialize (in_inv H0). *)
-  (* intros. *)
-  (* destruct H1. *)
-  (* symmetry in H1. contradiction. *)
-  (* assert (NoDup xs). apply NoDup_cons_iff in H. destruct H. *)
-  (* apply H2. *)
-  (* specialize (IHxs H2 H1). *)
-  (* rewrite remove_head_2. *)
-  (* apply Add_cons. *)
-  (* apply IHxs. *)
-  (* apply n. *)
-  admit.
-Admitted.
-
 Lemma list_remove_nodup_len_1 :
   forall (xs : list a) (x : a),
     NoDupA eqA xs -> InA eqA x xs ->
@@ -237,150 +234,19 @@ Proof.
   apply n.
 Qed.
 
-(* Lemma remove_not_in_1 : *)
-(*   forall (a : Type) (xs : list a) (x : a) (y : a), *)
-(*   forall (dec : DecidableEq a), *)
-(*     ~ In x (remove dec y xs) -> (x = y \/ ~ In x xs). *)
-(* Proof. *)
-(*   intros. *)
-(*   pose (dec x y). *)
-(*   destruct s. *)
-(*   left. *)
-(*   tauto. *)
-
-(*   right. *)
-(*   intro. *)
-(*   destruct H. *)
-  
-(*   induction xs. *)
-(*   compute. tauto. *)
-
-(*   simpl. *)
-(*   case (dec y a0). *)
-(*   intro. *)
-(*   assert (In x xs). *)
-(*   apply in_inv in H0. *)
-(*   destruct H0. *)
-(*   rewrite e in n. *)
-(*   rewrite H in n. *)
-(*   contradiction. *)
-
-(*   apply H. *)
-(*   specialize (IHxs H). *)
-(*   apply IHxs. *)
-
-(*   intro. *)
-(*   case (dec x a0). *)
-(*   intro. *)
-(*   rewrite e. *)
-(*   apply in_eq. *)
-
-(*   intro. *)
-(*   apply in_inv in H0. *)
-(*   destruct H0. *)
-(*   symmetry in H. *)
-(*   contradiction. *)
-
-(*   specialize (IHxs H). *)
-(*   apply in_cons. *)
-(*   apply IHxs. *)
-(* Qed. *)
-  
-Lemma list_remove_nodup_len_2 :
-  forall (xs : list a) (ys : list a) (x : a),
-    length xs = length ys ->
-    NoDupA eqA xs -> NoDupA eqA ys -> InA eqA x ys ->
-    Datatypes.length xs = S (Datatypes.length (removeA dec x ys)).
-Proof.
-  admit.
-Admitted.
-
-Lemma remove_not_in_3 :
-  forall (xs : list a) (x y : a),
-    InA eqA x (removeA dec y xs) -> ~ eqA x y.
-Proof.
-  intros.
-  case (dec x y).
-  intro.
-  rewrite e in H.
-  admit. intro.
-  apply n.
-Admitted.
-
-
-Lemma remove_not_in_2 :
-  forall (xs : list a) (x : a) (y : a),
-    InA eqA x (removeA dec y xs) <-> (~ eqA x y /\ InA eqA x xs).
-Proof.
-  intros.
-  (* -> *)
-  split.
-  intro.
-  induction xs.
-  compute in H. apply InA_nil in H. contradiction.
-  pose (InA_dec dec x (a0 :: xs)).
-  destruct s.
-  pose (dec x y).
-  destruct s.
-
-  rewrite e in H.
-  admit. auto.
-
-  admit.
-  (* apply removeA_not_in in n. *)
-  (* rewrite <- remove_not_in in H. *)
-  (* rewrite n in H. *)
-  (* apply remove_In in H. contradiction. *)
-  
-  admit.
-  (* rewrite remove_head_3 in H. *)
-  (* destruct H. *)
-  (* rewrite n in H0. *)
-
-Admitted.
-
-(*   (* <- *) *)
-(*   intros. *)
-(*   destruct H. *)
-(*   apply remove_head_3. *)
-(*   auto. *)
-(* Qed. *)
-  
-Lemma list_removeA_preserves_nodup :
-  forall (a : Type) (eqA : a -> a -> Prop) (xs : list a) (x : a),
-  forall (dec : DecidableEqA a eqA),
-    NoDup xs -> NoDup (removeA dec x xs).
-Proof.
-  (* intros. *)
-  (* induction H. *)
-  (* compute. apply NoDup_nil. *)
-  (* case (dec x x0). *)
-  (* Focus 2. *)
-  (* intro. *)
-  (* rewrite remove_head_2. *)
-  (* apply NoDup_cons. *)
-
-  (* intro. *)
-  (* rewrite remove_head_3 in H1. *)
-  (* destruct H1. *)
-  (* contradiction. *)
-  (* apply IHNoDup. *)
-  (* apply n. *)
-
-  (* intro. *)
-  (* rewrite e. *)
-  (* rewrite remove_head_4. *)
-  (* rewrite e in IHNoDup. *)
-  (* apply IHNoDup. *)
-  (* tauto. *)
-Admitted.
-
 Lemma NoDupA_cons_2 :
   forall (x : a) (xs : list a),
     NoDupA eqA (x :: xs) -> ~InA eqA x xs.
 Proof.
-  admit.
-Admitted.
+  intros.
+  intro.
+  inversion H0.
+  inversion H.
+  contradiction.
+
+  inversion H.
+  contradiction.
+Qed.
 
 Lemma list_length_removeA :
   forall (x : a) (xs : list a) (ys : list a),
@@ -495,3 +361,5 @@ Proof.
   destruct H3.
   auto. apply equiv. apply equiv. apply H0.
 Qed.
+
+End SetoidLists.
