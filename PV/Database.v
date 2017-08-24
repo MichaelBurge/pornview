@@ -23,6 +23,8 @@ Require Import Nat.
 Require Import Lists.
 Require Import Map.
 
+Module Database.
+
 Record Image : Set :=
   mkImage
     {
@@ -115,7 +117,6 @@ Fixpoint untag_image (db : ImageDb) (img : ImageId) (cat : CategoryId) : ImageDb
     indices := idxs;
     next_id := next_id db
   |}.
-      
 
 (* Useful helper functions *)
 Definition num_images (db : ImageDb) := M.cardinal (images db).
@@ -169,18 +170,62 @@ Proof.
   apply H0.
 Qed.
 
-Axiom preserves_consistency_3 :
+Theorem preserves_consistency_3 :
   forall (db : ImageDb) (img : ImageId),
     InternallyConsistent db -> InternallyConsistent (delete_image db img).
+Proof.
+  intros.
+  intro.
+  intro.
+  destruct db.
+  unfold delete_image in H0.
+  unfold next_id in H0.
+  unfold images in H0.
 
-Axiom preserves_consistency_4 :
+  unfold delete_image.
+  unfold next_id.
+  unfold InternallyConsistent in H.
+  apply MP.F.remove_in_iff in H0.
+  destruct H0.
+  specialize (H some_id H1).
+  unfold next_id in H.
+  apply H.
+Qed.
+  
+Theorem preserves_consistency_4 :
   forall (db : ImageDb) (img : ImageId) (cat : CategoryId),
     InternallyConsistent db -> InternallyConsistent (tag_image db img cat).
+Proof.
+  intros.
+  destruct db.
+  intro.
+  intro.
+  unfold tag_image.
+  unfold next_id.
 
-Axiom preserves_consistency_5 :
+  unfold InternallyConsistent in H.
+  specialize (H some_id H0).
+  unfold next_id in H.
+  apply H.
+Qed.
+  
+Theorem preserves_consistency_5 :
   forall (db : ImageDb) (img : ImageId) (cat : CategoryId),
     InternallyConsistent db -> InternallyConsistent (untag_image db img cat).
-
+Proof.
+  intros.
+  destruct db.
+  intro. intro.
+  unfold untag_image.
+  unfold next_id.
+  unfold untag_image in H0.
+  unfold next_id in H0.
+  unfold InternallyConsistent in H.
+  specialize (H some_id H0).
+  unfold next_id in H.
+  apply H.
+Qed.
+  
 Lemma next_id_nin :
   forall (db : ImageDb),
     InternallyConsistent db -> ~ (M.In (next_id db) (images db)).
@@ -297,10 +342,13 @@ Proof.
   unfold untag_image.
   unfold images. tauto.
 Qed.
-  
+
+End Database.
+
 Extraction Language Haskell.
-Extraction create_image.
-Extraction find_categories.
-Extraction delete_image.
-Extraction tag_image.
-Extraction untag_image.
+Extraction "Database" Database.
+(* Extraction create_image. *)
+(* Extraction find_categories. *)
+(* Extraction delete_image. *)
+(* Extraction tag_image. *)
+(* Extraction untag_image. *)

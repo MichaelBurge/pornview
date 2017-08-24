@@ -2,3 +2,5 @@
 *.glob
 *.vo
 make/*
+PV/Database.hs
+.stack-work/

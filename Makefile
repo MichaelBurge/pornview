@@ -5,13 +5,15 @@ libs =	PV/Types.vo \
 	PV/Map.vo \
 	PV/Database.vo
 
+app = src/Database.hs
 
 all: deps $(libs)
 
 deps: make/proof.deps
 
-%.vo: %.v
+%.vo %.hs: %.v
 	coqc -R PV PV $<
+
 clean:
 	rm PV/*.vo
 
