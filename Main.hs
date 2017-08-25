@@ -179,6 +179,7 @@ pageTagImage (imageId, catName) = case M.lookup (T.unpack catName) categories of
   Just catId -> do
     atomically $ modifyTVar' (state_db ?state) $ \db ->
       DB.tag_image db imageId catId
+    saveDb <$> readTVarIO (state_db ?state)
     ?respond $ W.responseLBS status200 [] "{}"
   
 pageUntagImage :: PageT (DB.ImageId, Text)
@@ -187,6 +188,7 @@ pageUntagImage (imageId, catName) = case M.lookup (T.unpack catName) categories 
   Just catId -> do
     atomically $ modifyTVar' (state_db ?state) $ \db ->
       DB.untag_image db imageId catId
+    saveDb <$> readTVarIO (state_db ?state)
     ?respond $ W.responseLBS status200 [] "{}"
 
 pageImage :: PageT DB.ImageId
