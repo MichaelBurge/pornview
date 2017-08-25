@@ -1,0 +1,14 @@
+body {
+    display: flex;
+    background-color: #448844;
+}
+nav { flex-basis: 20%; }
+#header {
+    background-color: #888888;
+}
+#thumbs {
+    display: flex;
+    flex-wrap: wrap;
+    list-style-type: none;
+    li { display: flex; flex-basis: 20%; }
+}

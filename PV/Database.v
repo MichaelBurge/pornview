@@ -16,6 +16,10 @@ From Coq Require Import
      Numbers.Natural.Abstract.NProperties
      PArith.BinPos
      Structures.Equalities
+     Strings.Ascii
+     extraction.ExtrHaskellString
+     extraction.ExtrHaskellNatInteger
+     extraction.ExtrHaskellNatNum
      Arith.PeanoNat.
 
 (* Our custom modules *)
@@ -28,6 +32,7 @@ Module Database.
 Record Image : Set :=
   mkImage
     {
+      id : N;
       filename : string;
       timestamp : N
     }.
@@ -37,7 +42,7 @@ Definition CategoryId := N.
 Definition Index := S.t.
 
 Record ImageDb : Type :=
-  mkDb
+  mkImageDb
     {
       images : M.t Image;
       indices : M.t Index;
@@ -51,8 +56,13 @@ Definition newDb := {|
   next_id := N.zero
                    |}.
 Definition create_image (db : ImageDb) (img : Image) :=
-  {|
-    images := M.add (next_id db) img (images db);
+  let newImg := {|
+        id := next_id db;
+        filename := filename img;
+        timestamp := timestamp img
+      |}
+  in {|
+    images := M.add (next_id db) newImg (images db);
     indices := indices db;
     next_id := N.succ (next_id db)
   |}.
@@ -83,6 +93,8 @@ Fixpoint find_imgs (db : ImageDb) (imgs : list ImageId) :=
     | Some img => cons img (find_imgs db is)
     end
   end.  
+
+Fixpoint find_img (db : ImageDb) (img : ImageId) : option Image := M.find img (images db).
 
 Fixpoint find_categories (db : ImageDb) (categories : list CategoryId) : list Image :=
   find_imgs db (list_from_set (find_categories_ids db categories)).
@@ -345,6 +357,10 @@ Qed.
 
 End Database.
 
+(* Extract Inductive nat => "Prelude.Int" [ "0" "Prelude.succ" ] *)
+(*                                        "(\f0 fS n -> if n Prelude.<= 0 then f0 () else fS ( n Prelude.- 1))". *)
+Extract Inductive list    => "[]" ["[]" "(:)"].
+Extract Inductive option => "Prelude.Maybe" ["Prelude.Just" "Prelude.Nothing"].
 Extraction Language Haskell.
 Extraction "Database" Database.
 (* Extraction create_image. *)
